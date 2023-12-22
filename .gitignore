@@ -7,7 +7,6 @@
 # data
 #.dvc is there as there are private paths
 results
-experiments
 data
 files
 db
