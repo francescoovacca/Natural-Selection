@@ -18,16 +18,13 @@ class Environment:
     """
     Environment for simulating agent-based ecosystem.
     """
-
     def __init__(
         self,
-        agents: list[BaseAgent],
         agent_features: AgentFeatures,
         env_features: EnvironmentFeatures,
     ):
         self.agent_features = agent_features
         self.env_features = env_features
-        self.agents = agents
         self.food = [self.generate_food() for _ in range(self.env_features.num_foods)]
         self.agents = [self.generate_agent() for _ in range(self.env_features.num_agents)]
 
@@ -58,30 +55,30 @@ class Environment:
         """
         # Regenerate food
         self.food = [self.generate_food() for _ in range(self.env_features.num_foods)]
-
         # Update agents
         new_agents = []
         for agent in self.agents:
-            if not agent.is_dead:
-                new_agents.append(agent)
+            if not agent.is_dead():
                 # Check if agent can replicate
                 if agent.food_eaten >= 2:
                     new_agents.append(self.generate_agent(parent=agent))
+                agent.reset()
+                new_agents.append(agent)
 
         self.agents = new_agents
 
-    def is_game_over(self):  # game over when no more food is left
-        game_over = (len(self.foods) == 0 or len(self.agents) <= 0)
+    def day_is_over(self):  # game over when no more food is left
+        game_over = (len(self.food) == 0 or len(self.agents) == 0)
         return game_over
 
     def visualize(self):
         fig, ax = plt.subplots()
-        if self.foods:
-            food_x, food_y = zip(*[food.position for food in self.foods])
+        if self.food:
+            food_x, food_y = zip(*[food.current_position for food in self.food])
         else:
             food_x, food_y = None, None
         ax.scatter(food_x, food_y, c='red', label='Food')
-        agent_x, agent_y = zip(*[agent.position for agent in self.agents])
+        agent_x, agent_y = zip(*[agent.current_position for agent in self.agents])
         agent_food_eaten = [agent.food_eaten for agent in self.agents]
 
         # Calculate dot sizes based on food eaten
@@ -91,8 +88,8 @@ class Environment:
         # Scatter plot for agents with variable dot sizes
         ax.scatter(agent_x, agent_y, c='blue', label='Agents', s=dot_sizes)
 
-        ax.set_xlim(0, self.grid_size)
-        ax.set_ylim(0, self.grid_size)
+        ax.set_xlim(0, self.env_features.grid_size)
+        ax.set_ylim(0, self.env_features.grid_size)
         ax.set_xlabel('X-coordinate')
         ax.set_ylabel('Y-coordinate')
         ax.legend()
@@ -100,4 +97,4 @@ class Environment:
         plt.show()
 
     def __repr__(self):
-        return f"Agents: {self.agents}, \nFood: {self.foods}"
+        return f"Agents: {self.agents}, \nFood: {self.food}"
