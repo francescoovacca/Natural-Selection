@@ -1,7 +1,7 @@
 import numpy as np
 from dataclasses import dataclass
 
-from src.Agent import AgentFeatures
+from src.Agent import AgentFeatures, BaseAgent
 from src.Environment import Environment, EnvironmentFeatures
 
 
@@ -16,13 +16,13 @@ class SetUp:
 
 class DayLoop:
 
-    def __init__(self, env):
+    def __init__(self, env: Environment):
         self.env = env
 
-    def _agents_move(self, agent):
+    def _agent_move(self, agent: BaseAgent):
         agent.move(self.env.grid_size)
 
-    def _agents_eat(self, agent):
+    def _agent_eat(self, agent: BaseAgent):
         for food in self.env.foods:
             distance = np.linalg.norm(np.array(agent.position) - np.array(food.position))
             if distance < self.env.eating_threshold and not food.is_eaten:
@@ -38,21 +38,33 @@ class DayLoop:
             print(f"agents reproduced = {num_agents_reproduced}")
         env.num_agents = num_agents_survived + num_agents_reproduced
 
-    def _restart(self):  # restart the grid (when game is over at the end of the day with new amount of agents)
+    def _restart(self):
+        survived_agents = [agent for agent in self.env.agents if not agent.is_dead]
+        num_reproductions = len([agent for agent in survived_agents if agent.food_eaten >= 2])
+        new_agents = []
         self.env.foods = []
         self.env.agents = []
         self.env.initialize()
 
     def main_loop(self, show_viz=False):
-        env = self.env
         done = False
-        while not done:  # go on until env is over
-            for agent in env.agents:  # loop on all agents and let them move and eat
-                self._agents_move(agent)
-                self._agents_eat(agent)
-            done = env.is_game_over()
+        # go on until env is over
+        while not done:
+
+            for agent in self.env.agents:
+                # agents move on grid
+                self._agent_move(agent)
+                # agents eat food
+                self._agent_eat(agent)
+                # update status: dead or alive
+                agent.update_life_status()
+
+            done = self.env.is_game_over()
+
+            # show environment after agent moves
             if show_viz:
-                env.visualize()
+                self.env.visualize()
+
         self._update(verbose=False)
         self._restart()
 
@@ -60,21 +72,25 @@ class DayLoop:
 def main(
     env_features: EnvironmentFeatures,
     agent_features: AgentFeatures,
-    n_days: int = 5
+    n_days: int = 5,
+    verbose=False
 ):
     """Run the whole script.
 
     :param env_features: stores the hyperparameters of the environment
     :param agent_features: stores the hyperparameters of the agens
     :param n_days: amount of days for which agents live up to lack of resources
+    :param verbose: print the number of days elapsed, if True
 
     :returns: array storing the amount of agents per day (note: we must change return value to study traits evolution)
     """
     env = Environment(agent_features, env_features)
     day = DayLoop(env)
     agents_per_day = np.zeros(n_days, dtype=int)
-    for i in range(n_days):
-        agents_per_day[i] = env.num_agents
+    for n in range(n_days):
+        if verbose:
+            print(f"day {n}")
+        agents_per_day[n] = env.num_agents
         day.main_loop()
     return agents_per_day
 
