@@ -1,8 +1,8 @@
 import numpy as np
 from dataclasses import dataclass
 
-from src.Agent import AgentFeatures
-from src.Environment import Environment, EnvironmentFeatures
+from Agent import AgentFeatures
+from Environment import Environment, EnvironmentFeatures
 
 
 # different type of agents (not used atm)

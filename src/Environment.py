@@ -1,8 +1,8 @@
 import numpy as np
 from dataclasses import dataclass
 
-from src.Agent import BaseAgent, AgentFeatures
-from src.Food import Food
+from Agent import BaseAgent, AgentFeatures
+from Food import Food
 import matplotlib.pyplot as plt
 
 
@@ -36,7 +36,7 @@ class Environment:
     def add_agents(self):  # add agents on the grid edges randomly
         for _ in range(self.num_agents):  # add as many agents as num_agents
             x, y = np.random.uniform(0, self.grid_size, size=2)
-            if np.random.random() > 0.5:
+            if np.random.random() > 0.5:  #bring agents to one of the 4 borders of the square environment
                 if np.random.random() > 0.5:
                     x = 0
                 else:
