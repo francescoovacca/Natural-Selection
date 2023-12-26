@@ -8,63 +8,77 @@ import matplotlib.pyplot as plt
 
 @dataclass
 class EnvironmentFeatures:
-    grid_size: int = 20
-    num_agents: int = 10
-    num_foods: int = 2
-    eating_threshold: float = 1
+    grid_size: int
+    num_agents: int
+    num_foods: int
+    eating_threshold: float
 
 
 class Environment:
-
-    def __init__(self, agent_features: AgentFeatures, env_features: EnvironmentFeatures):
+    """
+    Environment for simulating agent-based ecosystem.
+    """
+    def __init__(
+        self,
+        agent_features: AgentFeatures,
+        env_features: EnvironmentFeatures,
+    ):
         self.agent_features = agent_features
-        self.grid_size = env_features.grid_size
-        self.num_foods = env_features.num_foods
-        self.num_agents = env_features.num_agents
-        self.eating_threshold = env_features.eating_threshold
-        self.foods = []
-        self.agents = []
-        self.initialize()
+        self.env_features = env_features
+        self.food = [self.generate_food() for _ in range(self.env_features.num_foods)]
+        self.agents = [self.generate_agent() for _ in range(self.env_features.num_agents)]
 
-    def add_food(self):  # add food on the grid randomly
-        for _ in range(self.num_foods):
-            x = np.random.uniform(0, self.grid_size)
-            y = np.random.uniform(0, self.grid_size)
-            food = Food((x, y))
-            self.foods.append(food)
+    def generate_food(self) -> Food:
+        """
+        Generate a food item at a random location on the grid.
+        """
+        x = np.random.uniform(0, self.env_features.grid_size)
+        y = np.random.uniform(0, self.env_features.grid_size)
+        return Food((x, y))
 
-    def add_agents(self):  # add agents on the grid edges randomly
-        for _ in range(self.num_agents):  # add as many agents as num_agents
-            x, y = np.random.uniform(0, self.grid_size, size=2)
-            if np.random.random() > 0.5:  #bring agents to one of the 4 borders of the square environment
-                if np.random.random() > 0.5:
-                    x = 0
-                else:
-                    x = self.grid_size
-            else:
-                if np.random.random() > 0.5:
-                    y = 0
-                else:
-                    y = self.grid_size
-            agent = BaseAgent((x, y), self.agent_features)
-            self.agents.append(agent)
+    def generate_agent(self, parent: BaseAgent = None) -> BaseAgent:
+        """
+        Generate a new agent either randomly or from a parent agent.
+        """
+        x, y = np.random.uniform(0, self.env_features.grid_size, size=2)
+        # Position the agent on the grid edges randomly
+        if np.random.random() > 0.5:
+            x = 0 if np.random.random() > 0.5 else self.env_features.grid_size
+        else:
+            y = 0 if np.random.random() > 0.5 else self.env_features.grid_size
 
-    def initialize(self):  # initialize grid with random food and agents
-        self.add_food()
-        self.add_agents()
+        return BaseAgent((x, y), self.agent_features, parent)
 
-    def is_game_over(self):  # game over when no more food is left
-        game_over = (len(self.foods) == 0 or len(self.agents) <= 0)
+    def update(self):
+        """
+        Update the environment for a new day.
+        """
+        # Regenerate food
+        self.food = [self.generate_food() for _ in range(self.env_features.num_foods)]
+        # Update agents
+        new_agents = []
+        for agent in self.agents:
+            if not agent.is_dead():
+                # Check if agent can replicate
+                if agent.food_eaten >= 2:
+                    new_agents.append(self.generate_agent(parent=agent))
+                agent.reset()
+                new_agents.append(agent)
+
+        self.agents = new_agents
+
+    def day_is_over(self):  # game over when no more food is left
+        game_over = (len(self.food) == 0 or len(self.agents) == 0)
         return game_over
 
     def visualize(self):
         fig, ax = plt.subplots()
-        if self.foods:
-            food_x, food_y = zip(*[food.position for food in self.foods])
+        if self.food:
+            food_x, food_y = zip(*[food.current_position for food in self.food])
         else:
             food_x, food_y = None, None
         ax.scatter(food_x, food_y, c='red', label='Food')
-        agent_x, agent_y = zip(*[agent.position for agent in self.agents])
+        agent_x, agent_y = zip(*[agent.current_position for agent in self.agents])
         agent_food_eaten = [agent.food_eaten for agent in self.agents]
 
         # Calculate dot sizes based on food eaten
@@ -74,8 +88,8 @@ class Environment:
         # Scatter plot for agents with variable dot sizes
         ax.scatter(agent_x, agent_y, c='blue', label='Agents', s=dot_sizes)
 
-        ax.set_xlim(0, self.grid_size)
-        ax.set_ylim(0, self.grid_size)
+        ax.set_xlim(0, self.env_features.grid_size)
+        ax.set_ylim(0, self.env_features.grid_size)
         ax.set_xlabel('X-coordinate')
         ax.set_ylabel('Y-coordinate')
         ax.legend()
@@ -83,4 +97,4 @@ class Environment:
         plt.show()
 
     def __repr__(self):
-        return f"Agents: {self.agents}, \nFood: {self.foods}"
+        return f"Agents: {self.agents}, \nFood: {self.food}"
