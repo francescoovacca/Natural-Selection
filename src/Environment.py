@@ -11,7 +11,6 @@ class EnvironmentFeatures:
     grid_size: int
     num_agents: int
     num_foods: int
-    eating_threshold: float
 
 
 class Environment:

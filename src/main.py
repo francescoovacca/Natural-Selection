@@ -25,7 +25,7 @@ class Day:
     def _agent_eat(self, agent: BaseAgent):
         for food in self.env.food:
             distance = np.linalg.norm(np.array(agent.current_position) - np.array(food.current_position))
-            if distance < self.env.env_features.eating_threshold and not food.is_eaten:
+            if distance < agent.sense and not food.is_eaten:
                 agent.eat(food)
         self.env.food = [food for food in self.env.food if not food.is_eaten]
 
@@ -74,7 +74,6 @@ if __name__ == "__main__":
         grid_size=10,
         num_agents=10,
         num_foods=5,
-        eating_threshold=1,
     )
 
     agent_features = AgentFeatures(
