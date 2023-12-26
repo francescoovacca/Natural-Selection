@@ -7,7 +7,7 @@ class AgentFeatures:
     energy: float
     speed: float
     size: int
-    sense: float
+    sense: float = 1.0
 
 
 class BaseAgent:
