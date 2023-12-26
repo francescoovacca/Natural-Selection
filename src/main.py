@@ -66,7 +66,7 @@ def main(
             print(f"day {n}")
         agents_per_day[n] = env.agents
         day.day_loop()
-    return env, agents_per_day
+    return agents_per_day
 
 
 if __name__ == "__main__":
