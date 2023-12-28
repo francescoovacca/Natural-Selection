@@ -34,19 +34,22 @@ class BaseAgent:
 
     def move(self, grid_size):
         # move randomly on x or y by step size
-        step = self.speed if np.random.random() > 0.5 else - self.speed
         x, y = self.current_position
-        if np.random.random() > 0.5:
-            new_x = x
-            new_y = (y + step) % grid_size
-        else:
-            new_x = (x + step) % grid_size
-            new_y = y
+        if self.food_eaten < 2:
+            step = self.speed if np.random.random() > 0.5 else - self.speed
+            if np.random.random() > 0.5:
+                new_x = x
+                new_y = (y + step) % grid_size
+            else:
+                new_x = (x + step) % grid_size
+                new_y = y
 
-        # update position
-        self.current_position = new_x, new_y
-        # remove energy consumed
-        self.energy -= (self.size ** 3) * self.speed + self.sense
+            # update position
+            self.current_position = new_x, new_y
+            # remove energy consumed
+            self.energy -= (self.size ** 3) * self.speed + self.sense
+        else:  # already eaten enough, so do not move
+            self.current_position = x, y
 
     def eat(self, food):
         # eat food and increase counter
