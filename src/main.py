@@ -5,6 +5,7 @@ from Agent import AgentFeatures, BaseAgent
 from Environment import Environment, EnvironmentFeatures
 
 
+
 # different type of agents (not used atm)
 @dataclass
 class SetUp:
@@ -25,6 +26,7 @@ class Day:
     def _agent_eat(self, agent: BaseAgent):
         for food in self.env.food:
             distance = np.linalg.norm(np.array(agent.current_position) - np.array(food.current_position))
+
             if distance < agent.sense and not food.is_eaten:
                 agent.eat(food)
         self.env.food = [food for food in self.env.food if not food.is_eaten]
@@ -66,7 +68,8 @@ def main(
             print(f"day {n}")
         agents_per_day[n] = env.agents
         day.day_loop()
-    return agents_per_day
+
+    return env, agents_per_day
 
 
 if __name__ == "__main__":
