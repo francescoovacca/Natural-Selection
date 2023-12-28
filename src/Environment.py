@@ -1,8 +1,8 @@
 import numpy as np
 from dataclasses import dataclass
 
-from src.Agent import BaseAgent, AgentFeatures
-from src.Food import Food
+from Agent import BaseAgent, AgentFeatures
+from Food import Food
 import matplotlib.pyplot as plt
 
 
@@ -11,7 +11,6 @@ class EnvironmentFeatures:
     grid_size: int
     num_agents: int
     num_foods: int
-    eating_threshold: float
 
 
 class Environment:

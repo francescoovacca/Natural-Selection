@@ -4,4 +4,4 @@ class Food:
         self.is_eaten = False
 
     def __repr__(self):
-        return f"position={self.current_position}, is_eaten={self.is_eaten}"
+        return f"(position={self.current_position}, is_eaten={self.is_eaten})\n"

@@ -7,7 +7,7 @@ class AgentFeatures:
     energy: float
     speed: float
     size: int
-    sense: float
+    sense: float = 1.0
 
 
 class BaseAgent:
@@ -63,4 +63,4 @@ class BaseAgent:
         return is_dead
 
     def __repr__(self):
-        return f"position={self.current_position}, food_eaten={self.food_eaten}, energy={self.energy}\n"
+        return f"(position={self.current_position}, food_eaten={self.food_eaten}, energy={self.energy})\n"
